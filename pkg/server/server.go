@@ -3,6 +3,10 @@ package server
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/akiraoka29/go-photo-sharing-api/api/handlers"
+	"github.com/akiraoka29/go-photo-sharing-api/api/middleware"
+	"github.com/akiraoka29/go-photo-sharing-api/pkg/database"
 )
 
 type Server struct {
@@ -10,11 +14,13 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	// db := database.NewMySQLDB("root@tcp(localhost:3306)/ecommerce")
+	db := database.NewMySQLDB("root@tcp(localhost:3306)/ecommerce")
+	userHandler := handlers.NewUserHandler(db)
+	authMiddleware := middleware.NewAuthMiddleware()
+
 	router := http.NewServeMux()
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello, this is a sample REST API!")
-	})
+	router.HandleFunc("/login", userHandler.Login)
+	router.HandleFunc("/register", userHandler.Register)
 
 	s := &Server{
 		router: router,
